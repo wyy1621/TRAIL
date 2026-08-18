@@ -1,0 +1,93 @@
+seed: 42
+Dataset: RADBench
+UnsuperviseModel:
+  model_name: TimesNet
+  checkpoint: output/reconstructor/TimesNet_final.pth
+  model_args:
+    feature_dim: 53
+    win_size: 100
+    step: 100
+    d_model: 64
+    d_ff: 128
+    dropout: 0.1
+  training:
+    batch_size: 512
+    num_workers: 8
+    pin_memory: true
+    filled_point_weight: 0.001
+    learning_rate: 0.0001
+    weight_decay: 0.01
+    use_warmup: true
+    warmup_epochs: 2
+    max_epochs: 2
+    save_model_per_epoch: 1
+    resume_checkpoint: ''
+  score:
+    feature_reduction: mean
+ClassifierModel:
+  train_lmdb_path: DATA/RADBench/Supervise/train_ratio_10.lmdb
+  infer_lmdb_paths:
+  - DATA/RADBench/Test/test.lmdb
+  model_name: lightgbm
+  input_source: mse
+  input_scale: 100.0
+  feature_dim: 53
+  win_size: 100
+  step: 100
+  training:
+    batch_size: 512
+    num_workers: 8
+    pin_memory: true
+  lightgbm:
+    objective: binary
+    n_estimators: 300
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 100
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_lambda: 1.0
+    scale_pos_weight: auto
+    n_jobs: 8
+    random_state: 42
+Output:
+  residual_cache_root: output/residual_cache
+  classifier_root: output/detector
+  inference_root: output/inference
+  performance_root: output/performance
+Eval:
+  val_lmdb_path: DATA/RADBench/Supervise/val.lmdb
+  test_lmdb_path: DATA/RADBench/Test/test.lmdb
+  updates_root: DATA/Raw/RADBench
+  gt_msg_root: DATA/Processed/GroundTruth
+  output_root: output/evaluation
+  max_processes: 8
+  adf_enabled: true
+  adf_density_threshold: 0.6
+  adf_window_size: 10
+  adf_window_step: 1
+  point_threshold: 0.868067
+train_lmdb_path: DATA/RADBench/Unsupervise/train.lmdb
+val_lmdb_path: DATA/RADBench/Unsupervise/val.lmdb
+checkpoint_root: output/reconstructor
+RSF:
+  enabled: true
+  val_lmdb_path: DATA/RADBench/Supervise/val.lmdb
+  checkpoint_root: output/rsf
+  feature_dim: 53
+  window_size: 100
+  lr:
+    solver: lbfgs
+    class_weight: balanced
+    C: 1.0
+    max_iter: 5000
+    random_state: 42
+DataPipeline:
+  event_csv: radbench_leaks.csv
+  raw_updates_root: DATA/Raw/RADBench
+  rib_root: DATA/Raw/RIB
+  pre_event_updates_root: DATA/Raw/PreEventUpdates
+  ixp_output: DATA/Processed/IXP
+  route_table_root: DATA/Processed/RouteTables
+  ground_truth_root: DATA/Processed/GroundTruth
+  dataset_root: DATA/RADBench

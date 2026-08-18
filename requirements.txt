@@ -1,0 +1,17 @@
+torch
+numpy
+pandas
+scikit-learn
+lightgbm
+joblib
+lmdb
+zstandard
+pytricia
+PyYAML
+tqdm
+python-dotenv
+psutil
+matplotlib
+duckdb
+duckdb-appender
+pytz
